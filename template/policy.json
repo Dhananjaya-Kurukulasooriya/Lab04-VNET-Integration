@@ -1,0 +1,53 @@
+{
+  "properties": {
+    "displayName": "Restrict AI Service Creation to S0 and Specific Region, Deny Others",
+    "policyType": "Custom",
+    "mode": "All",
+    "description": "This policy ensures that only 'Azure AI services' can be created, and only in the 'Standard S0' pricing tier within specified Azure regions. All other resource types are blocked.",
+    "parameters": {
+      "allowedLocations": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed Locations",
+          "description": "The list of allowed Azure regions where Azure AI services can be created.",
+          "strongType": "location"
+        },
+        "defaultValue": [
+          "eastus",
+          "westeurope",
+          "southeastasia"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+         
+          {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.CognitiveServices/accounts"
+              },
+              {
+                "anyOf": [
+                  {
+                    "field": "Microsoft.CognitiveServices/accounts/sku.name",
+                    "notEquals": "S0"
+                  },
+                  {
+                    "field": "location",
+                    "notIn": "[parameters('allowedLocations')]"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "deny"
+      }
+    }
+  }
+}
